@@ -1,4 +1,4 @@
-rootProject.name = "basic_kmm_sample"
+rootProject.name = "cosmosSDK"
 
 include(":androidApp")
 include(":shared")

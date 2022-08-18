@@ -11,7 +11,7 @@ android {
         minSdk = (findProperty("android.minSdk") as String).toInt()
         targetSdk = (findProperty("android.targetSdk") as String).toInt()
 
-        applicationId = "com.mobileweb3.basic_kmm_sample.android"
+        applicationId = "com.mobileweb3.cosmossdk.android"
         versionCode = 1
         versionName = "1.0"
     }
@@ -64,6 +64,12 @@ android {
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    packagingOptions {
+        exclude("lib/x86_64/darwin/libscrypt.dylib")
+        exclude("lib/x86_64/freebsd/libscrypt.so")
+        exclude("lib/x86_64/linux/libscrypt.so")
     }
 
     dependencies {
