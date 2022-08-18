@@ -5,6 +5,7 @@ import com.mobileweb3.cosmossdk.crypto.CosmosNetwork
 import com.mobileweb3.cosmossdk.crypto.Entropy
 import com.mobileweb3.cosmossdk.crypto.Mnemonic
 import com.mobileweb3.cosmossdk.crypto.Utils
+import com.mobileweb3.cosmossdk.crypto.networks
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,11 +16,13 @@ import kotlinx.coroutines.flow.StateFlow
 
 data class MainState(
     val address: String,
-    val mnemonic: List<String>
+    val mnemonic: List<String>,
+    val selectedNetwork: CosmosNetwork
 ) : State
 
 sealed class MainAction : Action {
     object GenerateNew : MainAction()
+    class SelectNetwork(val cosmosNetwork: CosmosNetwork) : MainAction()
 }
 
 sealed class MainSideEffect : Effect {
@@ -28,7 +31,7 @@ sealed class MainSideEffect : Effect {
 
 class MainStore : Store<MainState, MainAction, MainSideEffect>, CoroutineScope by CoroutineScope(Dispatchers.Main) {
 
-    private val state = MutableStateFlow(MainState("", emptyList()))
+    private val state = MutableStateFlow(MainState("", emptyList(), CosmosNetwork.CosmosMain))
     private val sideEffect = MutableSharedFlow<MainSideEffect>()
 
     init {
@@ -46,6 +49,12 @@ class MainStore : Store<MainState, MainAction, MainSideEffect>, CoroutineScope b
             MainAction.GenerateNew -> {
                 createAddress()
             }
+            is MainAction.SelectNetwork -> {
+                state.value = state.value.copy(
+                    selectedNetwork = action.cosmosNetwork
+                )
+                createAddress()
+            }
         }
     }
 
@@ -53,7 +62,7 @@ class MainStore : Store<MainState, MainAction, MainSideEffect>, CoroutineScope b
         val entropy = Entropy.getEntropy()
         val mnemonic = Mnemonic.getRandomMnemonic(entropy)
         val createdAddress = Address.createAddressFromEntropyByNetwork(
-            network = CosmosNetwork.CosmosMain(),
+            network = state.value.selectedNetwork,
             entropy = Utils.byteArrayToHexString(entropy),
             path = 0,
             customPath = 0

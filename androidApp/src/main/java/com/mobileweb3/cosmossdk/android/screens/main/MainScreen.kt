@@ -37,14 +37,21 @@ fun MainScreen(
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
+
             Column {
+                NetworkSelection(
+                    onNetworkSelected = {
+                        store.dispatch(MainAction.SelectNetwork(it))
+                    }
+                )
+
                 Text(
                     text = "address: ${state.value.address}",
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .wrapContentHeight()
                         .clickable {
-                            uriHandler.openUri("https://mintscan.io/cosmos/account/${state.value.address}")
+                            uriHandler.openUri(state.value.selectedNetwork.getAccountLink(state.value.address))
                         },
                 )
 
