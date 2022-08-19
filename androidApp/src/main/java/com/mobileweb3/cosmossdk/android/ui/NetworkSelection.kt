@@ -1,4 +1,4 @@
-package com.mobileweb3.cosmossdk.android.screens.main
+package com.mobileweb3.cosmossdk.android.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.mobileweb3.cosmossdk.android.ui.DropdownNetworkSelection
 import com.mobileweb3.cosmossdk.crypto.CosmosNetwork
 import com.mobileweb3.cosmossdk.crypto.networks
 
@@ -39,7 +40,7 @@ fun NetworkSelection(
                 label = { Text(text = "Select network") },
                 modifier = Modifier.fillMaxWidth()
             )
-            DropDownList(
+            DropdownNetworkSelection(
                 requestToOpen = isOpen.value,
                 list = networks,
                 openCloseOfDropDownList,

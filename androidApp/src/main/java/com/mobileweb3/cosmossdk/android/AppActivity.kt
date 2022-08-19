@@ -65,9 +65,9 @@ class AppActivity : ComponentActivity() {
                             rememberInsetsPaddingValues(
                                 insets = LocalWindowInsets.current.systemBars,
                                 applyStart = true,
-                                applyTop = false,
+                                applyTop = true,
                                 applyEnd = true,
-                                applyBottom = false
+                                applyBottom = true
                             )
                         )
                     ) {
