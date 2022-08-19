@@ -7,6 +7,7 @@ import com.mobileweb3.cosmossdk.crypto.Mnemonic
 import com.mobileweb3.cosmossdk.crypto.Utils
 import com.mobileweb3.cosmossdk.crypto.networks
 import io.github.aakira.napier.Napier
+import io.ktor.utils.io.core.toByteArray
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

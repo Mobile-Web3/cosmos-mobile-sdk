@@ -14,17 +14,4 @@ object Utils {
         return hexChars.concatToString()
     }
 
-    @Throws(IllegalArgumentException::class)
-    fun hexStringToByteArray(s: String): ByteArray {
-        val len = s.length
-        require(len % 2 != 1) { "Hex string must have even number of characters" }
-        val data = ByteArray(len / 2)
-        var i = 0
-        while (i < len) {
-            data[i / 2] = ((s[i].digitToIntOrNull(16) ?: (-1 shl 4)) + s[i + 1].digitToIntOrNull(16)!!).toByte()
-            i += 2
-        }
-        return data
-    }
-
 }
