@@ -9,23 +9,23 @@ data class Account(
     val uuid: String,
     val nickName: String? = null,
     val isFavourite: String? = null,
-    val address: String? = null,
-    val network: String? = null,
-    val hasPrivateKey: String? = null,
-    val resource: String? = null,
-    val spec: String? = null,
-    val fromMnemonic: String? = null,
-    val path: String? = null,
+    var address: String? = null,
+    var network: String? = null,
+    var hasPrivateKey: Boolean? = null,
+    var resource: String? = null,
+    var spec: String? = null,
+    var fromMnemonic: Boolean? = null,
+    var path: Int? = null,
     val isValidator: Boolean? = null,
     val sequenceNumber: Int? = null,
     val accountNumber: Int? = null,
     val fetchTime: Long? = null,
-    val mSize: Int? = null,
-    val importTime: Long? = null,
+    var mnemonicSize: Int? = null,
+    var importTime: Long? = null,
     val lastTotal: String? = null,
     val sortOrder: Long? = null,
     val newBip44: Boolean? = null,
-    val customPath: Int? = null
+    var customPath: Int? = null
 ) {
 
     companion object {

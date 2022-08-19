@@ -1,11 +1,17 @@
 package com.mobileweb3.cosmossdk.app
 
+import com.mobileweb3.cosmossdk.crypto.Account
 import com.mobileweb3.cosmossdk.crypto.Address
 import com.mobileweb3.cosmossdk.crypto.CosmosNetwork
+import com.mobileweb3.cosmossdk.crypto.CryptoHelper
+import com.mobileweb3.cosmossdk.crypto.CryptoHelper.getEncData
+import com.mobileweb3.cosmossdk.crypto.CryptoHelper.getIvData
 import com.mobileweb3.cosmossdk.crypto.Entropy
 import com.mobileweb3.cosmossdk.crypto.Mnemonic
 import com.mobileweb3.cosmossdk.crypto.PrivateKey
 import com.mobileweb3.cosmossdk.crypto.Utils
+import com.mobileweb3.cosmossdk.interactor.MainInteractor
+import com.mobileweb3.cosmossdk.shared.System
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,19 +19,22 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 data class MainState(
     val address: String,
     val mnemonic: List<String>,
     val selectedNetwork: CosmosNetwork,
-    val publicKeyFromPrivate: String = "",
-    val publicKeysFromMnemonic: List<String> = emptyList()
+    val addressFromPrivate: String = "",
+    val addressesFromMnemonic: List<String> = emptyList(),
+    val accountsOfSelectedNetwork: List<Account> = emptyList()
 ) : State
 
 sealed class MainAction : Action {
     object GenerateNew : MainAction()
-    class RestoreWithMnemonic(val enteredMnemonic: String): MainAction()
-    class RestoreWithPrivate(val enteredPrivateKey: String): MainAction()
+    object SaveAddressFromCreate : MainAction()
+    class RestoreWithMnemonic(val enteredMnemonic: String) : MainAction()
+    class RestoreWithPrivate(val enteredPrivateKey: String) : MainAction()
     class SelectNetwork(val cosmosNetwork: CosmosNetwork) : MainAction()
 }
 
@@ -33,13 +42,18 @@ sealed class MainSideEffect : Effect {
     data class Message(val text: String) : MainSideEffect()
 }
 
-class MainStore : Store<MainState, MainAction, MainSideEffect>, CoroutineScope by CoroutineScope(Dispatchers.Main) {
+class MainStore(val interactor: MainInteractor) : Store<MainState, MainAction, MainSideEffect>, CoroutineScope by CoroutineScope(Dispatchers.Main) {
 
     private val state = MutableStateFlow(MainState("", emptyList(), CosmosNetwork.CosmosMain))
     private val sideEffect = MutableSharedFlow<MainSideEffect>()
 
     init {
-        createAddress()
+        //createAddress()
+        launch {
+            state.value = state.value.copy(
+                accountsOfSelectedNetwork = interactor.getAllAccounts(state.value.selectedNetwork)
+            )
+        }
     }
 
     override fun observeState(): StateFlow<MainState> = state
@@ -53,10 +67,16 @@ class MainStore : Store<MainState, MainAction, MainSideEffect>, CoroutineScope b
             MainAction.GenerateNew -> {
                 createAddress()
             }
+            MainAction.SaveAddressFromCreate -> {
+                saveAddress()
+            }
             is MainAction.SelectNetwork -> {
-                state.value = state.value.copy(
-                    selectedNetwork = action.cosmosNetwork
-                )
+                launch {
+                    state.value = state.value.copy(
+                        selectedNetwork = action.cosmosNetwork,
+                        accountsOfSelectedNetwork = interactor.getAllAccounts(action.cosmosNetwork)
+                    )
+                }
             }
             is MainAction.RestoreWithPrivate -> {
                 restorePubFromPriv(action.enteredPrivateKey)
@@ -67,10 +87,44 @@ class MainStore : Store<MainState, MainAction, MainSideEffect>, CoroutineScope b
         }
     }
 
+    private fun saveAddress() {
+        val newAccount = Account.newInstance(id = interactor.getIdForNewAccount()).apply {
+            val encryptResult = CryptoHelper.encrypt(
+                alias = "MNEMONIC_KEY" + this.uuid,
+                resource = Utils.byteArrayToHexString(Mnemonic.toEntropy(state.value.mnemonic)!!),
+                withAuth = false
+            )
+
+            this.resource = encryptResult.getEncData()
+            this.spec = encryptResult.getIvData()
+
+            this.address = state.value.address
+            this.network = state.value.selectedNetwork.displayName
+            this.hasPrivateKey = true
+
+            this.fromMnemonic = true
+            //TODO check path from other networks
+            this.path = 0
+            this.mnemonicSize = 24
+            this.importTime = System.getCurrentMillis()
+            //TODO check customPath from other networks
+            this.customPath = 0
+        }
+
+        launch {
+            interactor.saveAccount(newAccount)
+
+            val accounts = interactor.getAllAccounts(state.value.selectedNetwork)
+            state.value = state.value.copy(
+                accountsOfSelectedNetwork = accounts
+            )
+        }
+    }
+
     private fun restorePubFromMnemonic(enteredMnemonic: String) {
         if (enteredMnemonic.isEmpty()) {
             state.value = state.value.copy(
-                publicKeysFromMnemonic = listOf("Enter Mnemonic!")
+                addressesFromMnemonic = listOf("Enter Mnemonic!")
             )
             return
         }
@@ -79,7 +133,7 @@ class MainStore : Store<MainState, MainAction, MainSideEffect>, CoroutineScope b
         val mnemonicSize = mnemonicWords.size
         if (mnemonicSize != 12 && mnemonicSize != 16 && mnemonicSize != 24) {
             state.value = state.value.copy(
-                publicKeysFromMnemonic = listOf("Wrong Mnemonic words count = ${mnemonicWords.size}")
+                addressesFromMnemonic = listOf("Wrong Mnemonic words count = ${mnemonicWords.size}")
             )
         } else {
             if (Mnemonic.isValidMnemonic(mnemonicWords) && Mnemonic.isValidStringHdSeedFromWords(mnemonicWords)) {
@@ -116,7 +170,7 @@ class MainStore : Store<MainState, MainAction, MainSideEffect>, CoroutineScope b
                     customPath = 0
                 )
                 state.value = state.value.copy(
-                    publicKeysFromMnemonic = listOf(
+                    addressesFromMnemonic = listOf(
                         "${selectedNetwork.HDDerivationPath}0\n$address0\n",
                         "${selectedNetwork.HDDerivationPath}1\n$address1\n",
                         "${selectedNetwork.HDDerivationPath}2\n$address2\n",
@@ -126,7 +180,7 @@ class MainStore : Store<MainState, MainAction, MainSideEffect>, CoroutineScope b
                 )
             } else {
                 state.value = state.value.copy(
-                    publicKeysFromMnemonic = listOf("Invalid Mnemonic")
+                    addressesFromMnemonic = listOf("Invalid Mnemonic")
                 )
             }
         }
@@ -137,7 +191,7 @@ class MainStore : Store<MainState, MainAction, MainSideEffect>, CoroutineScope b
 
         if (userInput.isEmpty()) {
             state.value = state.value.copy(
-                publicKeyFromPrivate = "Enter Private Key!"
+                addressFromPrivate = "Enter Private Key!"
             )
             return
         }
@@ -148,14 +202,14 @@ class MainStore : Store<MainState, MainAction, MainSideEffect>, CoroutineScope b
 
         if (!PrivateKey.isValid(userInput)) {
             state.value = state.value.copy(
-                publicKeyFromPrivate = "Invalid Private Key"
+                addressFromPrivate = "Invalid Private Key"
             )
             return
         }
 
         val address = Address.getDpAddress(state.value.selectedNetwork, PrivateKey.generatePubHexFromPrivate(userInput))
         state.value = state.value.copy(
-            publicKeyFromPrivate = address
+            addressFromPrivate = address
         )
     }
 
@@ -172,7 +226,7 @@ class MainStore : Store<MainState, MainAction, MainSideEffect>, CoroutineScope b
         state.value = state.value.copy(
             address = createdAddress,
             mnemonic = mnemonic,
-            publicKeyFromPrivate = ""
+            addressFromPrivate = ""
         )
     }
 }

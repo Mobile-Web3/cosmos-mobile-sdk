@@ -50,7 +50,7 @@ fun RestoreWithMnemonicScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                state.value.publicKeysFromMnemonic.forEach {
+                state.value.addressesFromMnemonic.forEach {
                     Text(
                         text = it,
                         textAlign = TextAlign.Center,

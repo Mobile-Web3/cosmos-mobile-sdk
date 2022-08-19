@@ -15,7 +15,15 @@ class AccountsStorage(
         get() {
             val idFromSettings = settings.getLong(KEY_ACCOUNT_ID_CACHE, 0)
             settings.putLong(KEY_ACCOUNT_ID_CACHE, idFromSettings + 1)
+            activeAccountId = idFromSettings
             return idFromSettings
+        }
+    var activeAccountId: Long
+        get() {
+            return settings.getLong(KEY_LAST_ACCOUNT_ID_CACHE, 0)
+        }
+        set(id) {
+            settings.getLong(KEY_LAST_ACCOUNT_ID_CACHE, id)
         }
     private var diskCache: Map<Long, Account>
         get() {
@@ -56,5 +64,6 @@ class AccountsStorage(
     private companion object {
         private const val KEY_ACCOUNT_CACHE = "key_account_cache"
         private const val KEY_ACCOUNT_ID_CACHE = "key_account_id_cache"
+        private const val KEY_LAST_ACCOUNT_ID_CACHE = "key_last_account_id_cache"
     }
 }

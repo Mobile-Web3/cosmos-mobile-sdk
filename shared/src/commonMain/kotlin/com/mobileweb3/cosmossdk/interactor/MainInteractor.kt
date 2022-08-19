@@ -27,5 +27,9 @@ class MainInteractor internal constructor(
         accountsStorage.deleteAccount(id)
     }
 
+    fun getIdForNewAccount(): Long {
+        return accountsStorage.nextAccountId
+    }
+
     companion object
 }

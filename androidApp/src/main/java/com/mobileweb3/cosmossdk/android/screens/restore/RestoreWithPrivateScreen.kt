@@ -1,6 +1,5 @@
 package com.mobileweb3.cosmossdk.android.screens.restore
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -52,7 +51,7 @@ fun RestoreWithPrivateScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = state.value.publicKeyFromPrivate,
+                    text = state.value.addressFromPrivate,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .wrapContentHeight(),

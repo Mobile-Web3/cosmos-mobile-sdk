@@ -14,7 +14,7 @@ class App : Application() {
 
     private val appModule = module {
         single { MainInteractor.create(get(), BuildConfig.DEBUG) }
-        single { MainStore() }
+        single { MainStore(get()) }
     }
 
     override fun onCreate() {

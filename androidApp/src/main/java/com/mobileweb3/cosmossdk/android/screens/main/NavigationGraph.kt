@@ -27,7 +27,7 @@ fun NavigationGraph(
             RestoreWithPrivateScreen(store)
         }
         composable(BottomNavItem.Accounts.route) {
-            AccountScreen()
+            AccountScreen(store)
         }
         composable(BottomNavItem.Delegate.route) {
             DelegateScreen()
