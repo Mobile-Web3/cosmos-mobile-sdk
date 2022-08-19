@@ -9,7 +9,8 @@ sealed class CosmosNetwork(
     val displayName: String,
     val rawNetworkName: String,
     val toBytesName: String,
-    val childNetworkNumber: Int
+    val childNetworkNumber: Int,
+    val HDDerivationPath: String
 ) {
 
     fun getAccountLink(address: String): String {
@@ -20,13 +21,15 @@ sealed class CosmosNetwork(
         displayName = "Cosmos",
         rawNetworkName = "cosmoshub-mainnet",
         toBytesName = "cosmos",
-        childNetworkNumber = 118
+        childNetworkNumber = 118,
+        HDDerivationPath = "m/44'/118'/0'/0/"
     )
 
     object Osmosis : CosmosNetwork(
         displayName = "Osmosis",
         rawNetworkName = "osmosis-mainnet",
         toBytesName = "osmosis",
-        childNetworkNumber = 118
+        childNetworkNumber = 118,
+        HDDerivationPath = "m/44'/118'/0'/0/"
     )
 }

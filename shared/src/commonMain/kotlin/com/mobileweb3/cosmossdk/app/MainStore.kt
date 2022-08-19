@@ -18,11 +18,13 @@ data class MainState(
     val address: String,
     val mnemonic: List<String>,
     val selectedNetwork: CosmosNetwork,
-    val publicKeyFromPrivate: String = ""
+    val publicKeyFromPrivate: String = "",
+    val publicKeysFromMnemonic: List<String> = emptyList()
 ) : State
 
 sealed class MainAction : Action {
     object GenerateNew : MainAction()
+    class RestoreWithMnemonic(val enteredMnemonic: String): MainAction()
     class RestoreWithPrivate(val enteredPrivateKey: String): MainAction()
     class SelectNetwork(val cosmosNetwork: CosmosNetwork) : MainAction()
 }
@@ -55,11 +57,77 @@ class MainStore : Store<MainState, MainAction, MainSideEffect>, CoroutineScope b
                 state.value = state.value.copy(
                     selectedNetwork = action.cosmosNetwork
                 )
-                //createAddress()
             }
             is MainAction.RestoreWithPrivate -> {
                 restorePubFromPriv(action.enteredPrivateKey)
-                //val pubKey = WKey.getDpAddress(mChain, WKey.generatePubKeyHexFromPriv(mUserInput))
+            }
+            is MainAction.RestoreWithMnemonic -> {
+                restorePubFromMnemonic(action.enteredMnemonic)
+            }
+        }
+    }
+
+    private fun restorePubFromMnemonic(enteredMnemonic: String) {
+        if (enteredMnemonic.isEmpty()) {
+            state.value = state.value.copy(
+                publicKeysFromMnemonic = listOf("Enter Mnemonic!")
+            )
+            return
+        }
+
+        val mnemonicWords = enteredMnemonic.split(" ")
+        val mnemonicSize = mnemonicWords.size
+        if (mnemonicSize != 12 && mnemonicSize != 16 && mnemonicSize != 24) {
+            state.value = state.value.copy(
+                publicKeysFromMnemonic = listOf("Wrong Mnemonic words count = ${mnemonicWords.size}")
+            )
+        } else {
+            if (Mnemonic.isValidMnemonic(mnemonicWords) && Mnemonic.isValidStringHdSeedFromWords(mnemonicWords)) {
+                val selectedNetwork = state.value.selectedNetwork
+                val entropy = Utils.byteArrayToHexString(Mnemonic.toEntropy(mnemonicWords)!!)
+                val address0 = Address.createAddressFromEntropyByNetwork(
+                    network = selectedNetwork,
+                    entropy = entropy,
+                    path = 0,
+                    customPath = 0
+                )
+                val address1 = Address.createAddressFromEntropyByNetwork(
+                    network = selectedNetwork,
+                    entropy = entropy,
+                    path = 1,
+                    customPath = 0
+                )
+                val address2 = Address.createAddressFromEntropyByNetwork(
+                    network = selectedNetwork,
+                    entropy = entropy,
+                    path = 2,
+                    customPath = 0
+                )
+                val address3 = Address.createAddressFromEntropyByNetwork(
+                    network = selectedNetwork,
+                    entropy = entropy,
+                    path = 3,
+                    customPath = 0
+                )
+                val address4 = Address.createAddressFromEntropyByNetwork(
+                    network = selectedNetwork,
+                    entropy = entropy,
+                    path = 4,
+                    customPath = 0
+                )
+                state.value = state.value.copy(
+                    publicKeysFromMnemonic = listOf(
+                        "${selectedNetwork.HDDerivationPath}0\n$address0\n",
+                        "${selectedNetwork.HDDerivationPath}1\n$address1\n",
+                        "${selectedNetwork.HDDerivationPath}2\n$address2\n",
+                        "${selectedNetwork.HDDerivationPath}3\n$address3\n",
+                        "${selectedNetwork.HDDerivationPath}4\n$address4"
+                    )
+                )
+            } else {
+                state.value = state.value.copy(
+                    publicKeysFromMnemonic = listOf("Invalid Mnemonic")
+                )
             }
         }
     }

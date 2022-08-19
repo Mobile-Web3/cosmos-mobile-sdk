@@ -24,4 +24,18 @@ actual object Mnemonic {
             null
         }
     }
+
+    actual fun isValidMnemonic(words: List<String>): Boolean {
+        val mnemonics = MnemonicCode.INSTANCE.wordList
+        for (insert in words) {
+            if (!mnemonics.contains(insert)) {
+                return false
+            }
+        }
+        return true
+    }
+
+    actual fun isValidStringHdSeedFromWords(words: List<String>): Boolean {
+        return toEntropy(words)?.let { Entropy.getHDSeed(it) } != null
+    }
 }

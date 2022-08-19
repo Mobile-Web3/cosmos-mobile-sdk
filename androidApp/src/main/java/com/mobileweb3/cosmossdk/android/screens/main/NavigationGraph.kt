@@ -21,7 +21,7 @@ fun NavigationGraph(
             CreateWalletScreen(store)
         }
         composable(BottomNavItem.RestoreWithMnemonic.route) {
-            RestoreWithMnemonicScreen()
+            RestoreWithMnemonicScreen(store)
         }
         composable(BottomNavItem.RestoreWithPrivate.route) {
             RestoreWithPrivateScreen(store)
