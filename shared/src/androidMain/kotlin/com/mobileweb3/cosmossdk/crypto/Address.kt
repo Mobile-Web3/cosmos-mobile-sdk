@@ -64,7 +64,7 @@ actual object Address {
         //        }
     }
 
-    private fun getDpAddress(
+    actual fun getDpAddress(
         network: CosmosNetwork,
         pubHex: String
     ): String {

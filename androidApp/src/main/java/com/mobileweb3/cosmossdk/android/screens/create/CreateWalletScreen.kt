@@ -31,7 +31,7 @@ fun CreateWalletScreen(
 
     Column(
         modifier = Modifier.fillMaxSize()
-            .padding(bottom = 56.dp)
+            .padding(vertical = 56.dp)
     ) {
         Box(
             modifier = Modifier
@@ -41,12 +41,6 @@ fun CreateWalletScreen(
         ) {
 
             Column {
-                NetworkSelection(
-                    onNetworkSelected = {
-                        store.dispatch(MainAction.SelectNetwork(it))
-                    }
-                )
-
                 Text(
                     text = "address: ${state.value.address}",
                     textAlign = TextAlign.Center,

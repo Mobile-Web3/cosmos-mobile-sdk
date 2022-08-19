@@ -4,10 +4,9 @@ import com.mobileweb3.cosmossdk.crypto.Address
 import com.mobileweb3.cosmossdk.crypto.CosmosNetwork
 import com.mobileweb3.cosmossdk.crypto.Entropy
 import com.mobileweb3.cosmossdk.crypto.Mnemonic
+import com.mobileweb3.cosmossdk.crypto.PrivateKey
 import com.mobileweb3.cosmossdk.crypto.Utils
-import com.mobileweb3.cosmossdk.crypto.networks
 import io.github.aakira.napier.Napier
-import io.ktor.utils.io.core.toByteArray
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -18,11 +17,13 @@ import kotlinx.coroutines.flow.StateFlow
 data class MainState(
     val address: String,
     val mnemonic: List<String>,
-    val selectedNetwork: CosmosNetwork
+    val selectedNetwork: CosmosNetwork,
+    val publicKeyFromPrivate: String = ""
 ) : State
 
 sealed class MainAction : Action {
     object GenerateNew : MainAction()
+    class RestoreWithPrivate(val enteredPrivateKey: String): MainAction()
     class SelectNetwork(val cosmosNetwork: CosmosNetwork) : MainAction()
 }
 
@@ -54,9 +55,40 @@ class MainStore : Store<MainState, MainAction, MainSideEffect>, CoroutineScope b
                 state.value = state.value.copy(
                     selectedNetwork = action.cosmosNetwork
                 )
-                createAddress()
+                //createAddress()
+            }
+            is MainAction.RestoreWithPrivate -> {
+                restorePubFromPriv(action.enteredPrivateKey)
+                //val pubKey = WKey.getDpAddress(mChain, WKey.generatePubKeyHexFromPriv(mUserInput))
             }
         }
+    }
+
+    private fun restorePubFromPriv(enteredPrivateKey: String) {
+        var userInput = enteredPrivateKey.trim()
+
+        if (userInput.isEmpty()) {
+            state.value = state.value.copy(
+                publicKeyFromPrivate = "Enter Private Key!"
+            )
+            return
+        }
+
+        if (userInput.lowercase().startsWith("0x")) {
+            userInput = userInput.substring(2)
+        }
+
+        if (!PrivateKey.isValid(userInput)) {
+            state.value = state.value.copy(
+                publicKeyFromPrivate = "Invalid Private Key"
+            )
+            return
+        }
+
+        val address = Address.getDpAddress(state.value.selectedNetwork, PrivateKey.generatePubHexFromPrivate(userInput))
+        state.value = state.value.copy(
+            publicKeyFromPrivate = address
+        )
     }
 
     private fun createAddress() {
@@ -71,7 +103,8 @@ class MainStore : Store<MainState, MainAction, MainSideEffect>, CoroutineScope b
 
         state.value = state.value.copy(
             address = createdAddress,
-            mnemonic = mnemonic
+            mnemonic = mnemonic,
+            publicKeyFromPrivate = ""
         )
     }
 }

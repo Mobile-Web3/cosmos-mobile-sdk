@@ -8,4 +8,9 @@ expect object Address {
         path: Int,
         customPath: Int
     ): String
+
+    fun getDpAddress(
+        network: CosmosNetwork,
+        pubHex: String
+    ): String
 }

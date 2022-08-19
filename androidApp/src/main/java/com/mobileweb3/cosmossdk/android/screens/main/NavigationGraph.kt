@@ -24,7 +24,7 @@ fun NavigationGraph(
             RestoreWithMnemonicScreen()
         }
         composable(BottomNavItem.RestoreWithPrivate.route) {
-            RestoreWithPrivateScreen()
+            RestoreWithPrivateScreen(store)
         }
         composable(BottomNavItem.Accounts.route) {
             AccountScreen()
