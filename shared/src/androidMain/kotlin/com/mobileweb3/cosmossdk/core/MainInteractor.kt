@@ -2,7 +2,7 @@ package com.mobileweb3.cosmossdk.core
 
 import android.content.Context
 import com.mobileweb3.cosmossdk.core.datasource.network.SomethingLoader
-import com.mobileweb3.cosmossdk.core.datasource.storage.SomethingStorage
+import com.mobileweb3.cosmossdk.core.datasource.storage.AccountsStorage
 import com.mobileweb3.cosmossdk.interactor.MainInteractor
 import com.russhwolf.settings.AndroidSettings
 import io.github.aakira.napier.DebugAntilog
@@ -13,8 +13,8 @@ fun MainInteractor.Companion.create(ctx: Context, withLog: Boolean) = MainIntera
     SomethingLoader(
         AndroidHttpClient(withLog)
     ),
-    SomethingStorage(
-        AndroidSettings(ctx.getSharedPreferences("preferences_title", Context.MODE_PRIVATE)),
+    AccountsStorage(
+        AndroidSettings(ctx.getSharedPreferences("accounts", Context.MODE_PRIVATE)),
         Json {
             ignoreUnknownKeys = true
             isLenient = true

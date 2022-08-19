@@ -1,38 +1,30 @@
 package com.mobileweb3.cosmossdk.interactor
 
 import com.mobileweb3.cosmossdk.core.datasource.network.SomethingLoader
-import com.mobileweb3.cosmossdk.core.datasource.storage.SomethingStorage
-import com.mobileweb3.cosmossdk.core.entity.Something
+import com.mobileweb3.cosmossdk.core.datasource.storage.AccountsStorage
+import com.mobileweb3.cosmossdk.crypto.Account
+import com.mobileweb3.cosmossdk.crypto.CosmosNetwork
 
 class MainInteractor internal constructor(
     private val somethingLoader: SomethingLoader,
-    private val somethingStorage: SomethingStorage,
+    private val accountsStorage: AccountsStorage,
 ){
 
     @Throws(Exception::class)
-    suspend fun getAllSomething(
-        forceUpdate: Boolean = false
-    ): List<Something> {
-        var somethings = somethingStorage.getAllSomething()
+    suspend fun getAllAccounts(network: CosmosNetwork): List<Account> {
+        var accounts = accountsStorage.getAllAccounts()
 
-        if (forceUpdate || somethings.isEmpty()) {
-            val new = somethingLoader.getSomething("url").data
-            somethingStorage.saveSomething(new)
-            somethings = new
-        }
-
-        return somethings
+        return accounts.filter { it.network == network.displayName }
     }
 
     @Throws(Exception::class)
-    suspend fun addSomething(url: String) {
-        val something = somethingLoader.getSomething(url).data.firstOrNull()
-        something?.let { somethingStorage.saveSomething(it) }
+    suspend fun saveAccount(account: Account) {
+        accountsStorage.saveAccount(account)
     }
 
     @Throws(Exception::class)
-    suspend fun deleteSomething(id: String) {
-        somethingStorage.deleteSomething(id)
+    suspend fun deleteAccount(id: Long) {
+        accountsStorage.deleteAccount(id)
     }
 
     companion object

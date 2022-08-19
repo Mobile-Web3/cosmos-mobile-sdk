@@ -1,7 +1,7 @@
 package com.mobileweb3.cosmossdk.core
 
 import com.mobileweb3.cosmossdk.core.datasource.network.SomethingLoader
-import com.mobileweb3.cosmossdk.core.datasource.storage.SomethingStorage
+import com.mobileweb3.cosmossdk.core.datasource.storage.AccountsStorage
 import com.mobileweb3.cosmossdk.interactor.MainInteractor
 import com.russhwolf.settings.AppleSettings
 import io.github.aakira.napier.DebugAntilog
@@ -13,7 +13,7 @@ fun MainInteractor.Companion.create(withLog: Boolean) = MainInteractor(
     SomethingLoader(
         IosHttpClient(withLog)
     ),
-    SomethingStorage(
+    AccountsStorage(
         AppleSettings(NSUserDefaults.standardUserDefaults()),
         Json {
             ignoreUnknownKeys = true
